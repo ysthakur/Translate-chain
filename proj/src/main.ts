@@ -1,4 +1,4 @@
-// import translate = require('@vitalets/google-translate-api');
+import translate = require('@vitalets/google-translate-api');
 import { sayHello } from "./greet";
 
 function showHello(divName: string, name: string) {
@@ -6,7 +6,11 @@ function showHello(divName: string, name: string) {
   elt.innerText = sayHello(name);
 }
 
-showHello("greeting", "TypeScript");
+document.getElementById('Add-language-input').onkeydown = (event: KeyboardEvent) => {
+  alert(event);
+};
+
+// showHello("greeting", "TypeScript");
 
 // type ResType = {
 //   text: string,
@@ -17,15 +21,11 @@ showHello("greeting", "TypeScript");
 //   }
 // }
 
-// interface Indexable {
-//   [index: string]: any
-// }
+interface Indexable {
+  [index: string]: any
+}
 
-// const languages = <Indexable> translate.languages;
-
-// Object.values(languages).forEach((l: any) => {
-//   console.log(`  <option value=${l}>`);
-// });
+const languages = <Indexable> translate.languages;
 
 // // let x = document.createElement('Start language');
 // // x.setAttribute('type', 'text');
