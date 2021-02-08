@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no tests installed\" && exit 1",
     "build": "tsc",
-    "start": "node proj/dist/main.js"
+    "start": "nodemon proj/dist/main.js"
   },
   "repository": {
     "type": "git",
@@ -19,19 +19,42 @@
   },
   "homepage": "https://github.com/ysthakur/Translate-chain#readme",
   "devDependencies": {
-    "@types/node": "^14.14.24",
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
+    "@babel/runtime": "^7.12.13",
+    "@types/node": "^14.14.25",
+    "babel-loader": "^8.0.0",
     "browserify": "^17.0.0",
+    "ejs": "^3.1.5",
     "eslint": "^7.19.0",
+    "express": "^4.17.1",
     "fancy-log": "^1.3.3",
+    "fs": "0.0.1-security",
     "gulp": "^4.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-ignore": "^3.0.0",
+    "gulp-nodemon": "^2.5.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-terser": "^2.0.1",
     "gulp-typescript": "^6.0.0-alpha.1",
+    "gulp-uglify": "^3.0.2",
     "tsify": "^5.0.2",
     "typescript": "^4.1.3",
+    "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
-    "watchify": "^4.0.0"
+    "watchify": "^4.0.0",
+    "webpack": "^5.20.2"
   },
   "dependencies": {
+    "@babel/helper-regex": "^7.10.5",
+    "@babel/types": "^7.12.13",
     "@vitalets/google-translate-api": "^5.0.0",
-    "source-map-resolve": "^0.6.0"
+    "body-parser": "^1.19.0",
+    "chokidar": "^3.5.1",
+    "http": "0.0.1-security",
+    "path": "^0.12.7",
+    "source-map-resolve": "^0.6.0",
+    "types": "^0.1.1"
   }
 }

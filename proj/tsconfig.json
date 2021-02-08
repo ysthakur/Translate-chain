@@ -1,8 +1,12 @@
 {
-  "files": ["src/main.ts", "src/greet.ts"],
   "compilerOptions": {
     "noImplicitAny": true,
-    "target": "es5",
-    "esModuleInterop": false
-  }
+    "target": "es2020",
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "types": ["node"],
+    "moduleResolution": "node"
+  },
+  "exclude": ["node_modules", "node_modules/**/*.js", "node_modules/*"],
+  "files": ["src/main.ts"]
 }

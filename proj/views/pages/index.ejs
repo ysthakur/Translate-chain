@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Translate chain</title>
+  </head>
+  <body>
+    <h2>Tired of accurate translations and intuitive UIs? We can help you with that!</h2>
+    <script>
+      function validateLanguages() {
+        const languages = <%-allLangs%>;
+        const types = ["Start", "End", "Added"];
+        const form = document.forms["StartAndEndAndAddLangs"];
+        const inputs = types.map(l => form[`${l} language`].value);
+
+        if (inputs[1] === "Automatic" || inputs[2] === "Automatic") {
+          alert('Only the start language cannot be automatic.');
+          return false;
+        }
+
+        var found = [false, false, false];
+        var foundStart = false, foundEnd = false, foundAdded = false;
+
+        for (const iso in languages) {
+          for (const i in added)
+            if (added[i] === languages[iso])
+              found[i] = true;
+        }
+
+        for (const i in inputs)
+          if (!found[i]) {
+            alert(`${types[i]} language ${inputs[i]} is not valid.`);
+            //TODO clear input
+            return false;
+          }
+        
+        return true;
+      }
+    </script>
+    
+    <form action="" method="post" onsubmit="return validateLanguages()" name="StartAndEndAndAddLangs">
+      <label for="Start language input">Choose a start language:</label>
+      <input list="All-languages" id="Start language input" value="<%=startLang%>" name="Start language"/>
+      
+      <label for="End language input">Choose an end language:</label>
+      <input list="All-but-auto" id="End language input" value="<%=endLang%>" name="End language"/>
+
+      <label for="Add-language-input">Choose another language to add:</label>
+      <input list="All-but-auto" id="Add-language-input" name="Added language"/>
+
+      <%- include('../partials/allLangs.ejs') %>
+      <%- include('../partials/allButAuto.ejs') %>
+
+      <input type="hidden" name="Action kind" value="Start, end, and added languages"/>
+      <input type="submit" value="Ok">
+    </form>
+
+    <form action="" method="post" name="Input text to translate">
+      <label for="Input text">Input text to translate here:</label>
+      <input type="text" id="Input text" name="Input text" value="<%= inputText %>" maxlength="1000" size="50%">
+      <input type="hidden" name="Action kind" value="Input text"/>
+      <input type="submit" value="Translate">
+    </form>
+    
+    <h2>Here is your translated text:</h2>
+    <p><%- outputText %></p>
+
+    <p>Middle languages:</p>
+    <ul>
+      <% eval(middleLangs).forEach(lang => { %>
+        <li><%- lang %></li>
+      <% }); %>
+    </ul>
+  </body>
+</html>
