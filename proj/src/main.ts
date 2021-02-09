@@ -1,84 +1,71 @@
-import * as googleTranslateApi from '@vitalets/google-translate-api';
-import * as path from 'path';
-const bodyParser = require('body-parser');
-const express = require('express');
-const tr = require('@vitalets/google-translate-api');
+import * as path from 'path'
+import * as tr from '@vitalets/google-translate-api'
+import * as googleTranslateApi from '@vitalets/google-translate-api'
+const bodyParser = require('body-parser')
+const express = require('express')
+const translate = require('@vitalets/google-translate-api')
+
 const app = express()
 const port = 3000
 
-app.use(bodyParser.json());
+app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.set("view engine", "ejs");
+app.set("view engine", "ejs")
 app.set('views', path.join(__dirname, '../views'))
 
-// app.get('/', (req: any, res: any) => {
-//   res.send('Hello World!')
-// })
+const allLanguageNames = <string[]> Object.values(tr.languages).filter(l => typeof l === "string")
 
-const allLanguageNames = <string[]> Object.values(googleTranslateApi.languages).filter(l => typeof l === "string");
-
-let startLang = 'auto',
-  endLang = 'en',
+let startLang = 'Automatic',
+  endLang = '',
   middleLangs: string[] = [],
-  middleLangNames: string[] = [],
-  inputText = "",
-  outputText = "";
+  inputText = '',
+  outputText = '';
 
 function rerender(res: any) {
   res.render('pages/index.ejs', {
-    startLang: tr.languages[startLang],
-    endLang: tr.languages[endLang],
-    middleLangs: JSON.stringify(middleLangNames),
+    startLang: startLang,
+    endLang: endLang,
+    middleLangs: JSON.stringify(middleLangs),
     inputText: inputText,
     outputText: outputText,
     allLangs: JSON.stringify(allLanguageNames)
   })
 }
 
-function translate(text: string, from: string, to: string): Promise<string> {
-  return tr(text, { from: from, to: to }).then((res: googleTranslateApi.ITranslateResponse) => {
-      // console.log(res);
-      return res.text
-    })
-}
+const trans = (text: string, from: string, to: string): Promise<string> =>
+  translate(text, { from: from, to: to }).then((res: tr.ITranslateResponse) => res.text)
 
 // index page
 app.get('/', (req: any, res: any) => {
-  rerender(res);
-});
+  rerender(res)
+})
 
 app.post('/', (req: any, res: any) => {
-  // res.sendStatus(200);
-  // console.log('Got body:', req.body);
   if (req.body['Action kind'] === 'Input text') {
-    inputText = req.body['Input text'];
-    let from = startLang;
-    let promise = Promise.resolve(inputText);
+    inputText = req.body['Input text']
+    let from = startLang
+    let promise = Promise.resolve(inputText)
     for (const to of middleLangs) {
-      const f2 = from;
-      const t2 = to;
-      // console.log(`from=${from}, to=${to}`);
-      promise = promise.then(text => translate(text, f2, t2));
-      from = to;
+      const f2 = from
+      const t2 = to
+      promise = promise.then(text => trans(text, f2, t2))
+      from = to
     }
-    promise.then(text => translate(text, from, endLang))
+    promise.then(text => trans(text, from, endLang))
       .then(finalText => {
-        outputText = finalText;
-        rerender(res);
-      }).catch(e => console.error(e));
+        outputText = finalText
+        rerender(res)
+      }).catch(e => console.error(e))
   } else {
-    startLang = tr.languages.getCode(req.body['Start language']);
-    endLang = tr.languages.getCode(req.body['End language']);
-    const added = req.body['Added language'];
-    if (added) {
-      middleLangs.push(tr.languages.getCode(added));
-      middleLangNames.push(added);
-    }
-    rerender(res);
+    startLang = req.body['Start language']
+    endLang = req.body['End language']
+    const added = req.body['Added language']
+    if (added) middleLangs.push(added)
+    rerender(res)
   }
-});
+})
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-});
+  console.log(`Listening at http://localhost:${port}`)
+})
