@@ -8,11 +8,46 @@
   <body>
     <h2>Tired of accurate translations and intuitive UIs? Then this app is just what you need!</h2>
     <script>
+      const kinds = ['Start', 'End', 'Added'];
+      var startLang = "<%- startLang %>";
+      var endLang = "<%- endLang %>";
+      var middleLangs = <%- middleLangs %>;
+      function addInput(form, name, value) {
+        const input = document.createElement('input');
+        input.setAttribute('name', "" + name);
+        input.setAttribute('value', "" + value);
+        input.setAttribute('type', 'hidden');
+        form.appendChild(input);
+      }
+      function modifyForm() {
+        const form = document.getElementById('languagesForm');
+        addInput(form, 'startLang', startLang);
+        form.submit();
+      }
+      function validateLang(lang, kind, allowAuto) {
+        if (!allowAuto && lang === 'Automatic') {
+          alert(`${kind} language cannot be Automatic`);
+          return false
+        }
+        var found = false
+
+        for (const validLang of languages) {
+          if (lang === validLang) found = true;
+        }
+
+        if (!found) {
+          alert(`${types[i]} language ${inputs[i]} is not valid.`);
+          //TODO clear input
+          return false;
+        }
+      
+        return true;
+      }
       function validateLanguages() {
         const languages = <%-allLangs%>;
-        const types = ["Start", "End", "Added"];
+        const kinds = ["Start", "End", "Added"];
         const form = document.forms["StartAndEndAndAddLangs"];
-        const inputs = types.map(l => form[`${l} language`].value);
+        const inputs = kinds.map(l => form[`${l} language`].value);
 
         if (inputs[1] === "Automatic" || inputs[2] === "Automatic") {
           alert('Only the start language cannot be automatic.');
@@ -20,26 +55,44 @@
         }
 
         var found = [false, false, false];
-        var foundStart = false, foundEnd = false, foundAdded = false;
 
         for (const iso in languages) {
-          for (const i in added)
-            if (added[i] === languages[iso])
+          for (const i in inputs)
+            if (inputs[i] === languages[iso])
               found[i] = true;
         }
 
         for (const i in inputs)
           if (!found[i]) {
-            alert(`${types[i]} language ${inputs[i]} is not valid.`);
+            alert(`${kinds[i]} language ${inputs[i]} is not valid.`);
             //TODO clear input
             return false;
           }
         
         return true;
       }
+      function whenAddLanguage() {
+        const form = document.getElementById('languagesForm');
+        const form2 = document.forms['languagesForm'];
+        const inputs = kinds.map(kind => form[`${kind} language`].value);
+        for (const i in kinds) {
+          if (!validateLang(inputs[i], kinds[i], i == 0)) {
+            return false;
+          }
+        }
+        addInput(form, 'Input text', '');
+        return true;
+      }
+      function beforeTranslate() {
+        const form = document.getElementById('Text input form');
+        addInput(form, 'Start language', startLang);
+        addInput(form, 'End language', startLang);
+        addInput(form, 'Middle languages', JSON.stringify(middleLangs));
+        form.submit();
+      }
     </script>
     
-    <form action="" method="post" onsubmit="return validateLanguages()" name="StartAndEndAndAddLangs">
+    <form action="" id="languagesForm" method="post" onsubmit="return whenAddLanguage()" name="StartAndEndAndAddLangs">
       <label for="Start language input">Choose a start language:</label>
       <input list="All-languages" id="Start language input" value="<%=startLang%>" name="Start language"/>
       
@@ -49,28 +102,28 @@
       <label for="Add-language-input">Choose another language to add:</label>
       <input list="All-but-auto" id="Add-language-input" name="Added language"/>
 
-      <datalist id="All-languages">
-        <% for (const lang of eval(allLangs)) {%>
-          <option value="<%-lang%>">
-        <% } %>
-      </datalist>
-
-      <datalist id="All-but-auto">
-        <% for (const lang of eval(allLangs)) { if (lang != "Automatic") {%>
-          <option value="<%-lang%>">
-        <% } } %>
-      </datalist>
-
       <input type="hidden" name="Action kind" value="Start, end, and added languages"/>
       <input type="submit" value="Ok">
     </form>
 
-    <form action="" method="post" name="Input text to translate">
+    <form action="" id="Text input form" method="post" name="Input text to translate">
       <label for="Input text">Input text to translate here:</label>
       <input type="text" id="Input text" name="Input text" value="<%= inputText %>" maxlength="1000" size="50%">
       <input type="hidden" name="Action kind" value="Input text"/>
       <input type="submit" value="Translate">
     </form>
+
+    <datalist id="All-languages">
+      <% for (const lang of eval(allLangs)) {%>
+        <option value="<%-lang%>">
+      <% } %>
+    </datalist>
+
+    <datalist id="All-but-auto">
+      <% for (const lang of eval(allLangs)) { if (lang != "Automatic") {%>
+        <option value="<%-lang%>">
+      <% } } %>
+    </datalist>
     
     <h2>Here is your translated text:</h2>
     <p><%- outputText %></p>

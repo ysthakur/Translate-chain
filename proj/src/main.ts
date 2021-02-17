@@ -33,7 +33,7 @@ function rerender(res: any) {
   })
 }
 
-const trans = (text: string, from: string, to: string): Promise<string> =>
+const trans = (text: string, from: string, to: string) =>
   translate(text, { from: from, to: to }).then((res: tr.ITranslateResponse) => res.text)
 
 // index page
@@ -42,6 +42,7 @@ app.get('/', (req: any, res: any) => {
 })
 
 app.post('/', (req: any, res: any) => {
+  console.log(req.body);
   if (req.body['Action kind'] === 'Input text') {
     inputText = req.body['Input text']
     let from = startLang
