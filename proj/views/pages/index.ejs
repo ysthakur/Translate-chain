@@ -4,9 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Translate chain</title>
+    <!-- todo make this uglier -->
+    <style>
+      body {background-color: rgb(255, 217, 0);}
+      h1 {color: red; font-weight: 900; font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif}
+      h2 {color: green;}
+      p {color: red; font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;}
+      label {background-color: rgb(255, 217, 0); color: white;}
+      li {font-family: fantasy;}
+    </style>
   </head>
   <body>
-    <h2>Tired of accurate translations and intuitive UIs? Then this app is just what you need!</h2>
+    <h1>Tired of accurate translations and well-designed UIs? Then this app is just what you need!</h1>
     <script>
       const kinds = ['Start', 'End', 'Added'];
       var startLang = "<%- startLang %>";
@@ -14,7 +23,6 @@
       var middleLangs = <%- middleLangs %>;
       var inputText = "<%- inputText %>";
       var outputText = "<%- outputText %>";
-      var languages = <%- allLangs %>;
       var allButAuto = <%- allButAuto %>;
 
       function addInput(form, name, value) {
@@ -23,21 +31,24 @@
         input.setAttribute('value', value);
         input.setAttribute('type', 'hidden');
         form.appendChild(input);
-        console.log(form);
       }
       function validateLang(lang, kind, allowAuto) {
-        if (!allowAuto && lang === 'Automatic') {
-          alert(`${kind} language cannot be Automatic`);
-          return false
+        if (lang === 'Automatic') {
+          if (!allowAuto) {
+            alert(`${kind} language cannot be Automatic`);
+            return false
+          } else {
+            return true
+          }
         }
         var found = false
 
-        for (const validLang of languages) {
+        for (const validLang of allButAuto) {
           if (lang === validLang) found = true;
         }
 
         if (!found) {
-          alert(`${types[i]} language ${inputs[i]} is not valid.`);
+          alert(`${kind} language ${lang} is not valid.`);
           //TODO clear input
           return false;
         }
@@ -61,7 +72,7 @@
         const form2 = document.forms['StartAndEndLangs'];
         if (!validateLang(form2['Start language'].value, 'Start', true) || !validateLang(form2['End language'].value, 'End', false))
           return false;
-
+        
         addInputs(document.getElementById('setStartAndEndForm'), ['Start language', 'End language']);
         return true;
       }
