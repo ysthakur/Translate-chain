@@ -12,17 +12,18 @@
       var startLang = "<%- startLang %>";
       var endLang = "<%- endLang %>";
       var middleLangs = <%- middleLangs %>;
+      var inputText = "<%- inputText %>";
+      var outputText = "<%- outputText %>";
+      var languages = <%- allLangs %>;
+      var allButAuto = <%- allButAuto %>;
+
       function addInput(form, name, value) {
         const input = document.createElement('input');
-        input.setAttribute('name', "" + name);
-        input.setAttribute('value', "" + value);
+        input.setAttribute('name', name);
+        input.setAttribute('value', value);
         input.setAttribute('type', 'hidden');
         form.appendChild(input);
-      }
-      function modifyForm() {
-        const form = document.getElementById('languagesForm');
-        addInput(form, 'startLang', startLang);
-        form.submit();
+        console.log(form);
       }
       function validateLang(lang, kind, allowAuto) {
         if (!allowAuto && lang === 'Automatic') {
@@ -43,86 +44,87 @@
       
         return true;
       }
-      function validateLanguages() {
-        const languages = <%-allLangs%>;
-        const kinds = ["Start", "End", "Added"];
-        const form = document.forms["StartAndEndAndAddLangs"];
-        const inputs = kinds.map(l => form[`${l} language`].value);
-
-        if (inputs[1] === "Automatic" || inputs[2] === "Automatic") {
-          alert('Only the start language cannot be automatic.');
+      function addInputs(form, except) {
+        Object.entries({
+          'Start language': startLang,
+          'End language': endLang,
+          'Middle languages': JSON.stringify(middleLangs),
+          'Input text': inputText,
+          'Output text': outputText
+        }).filter(([name, _]) => except.every(e => name !== e))
+          .forEach(([name, value]) => {
+            addInput(form, name, value)
+          });
+      }
+      
+      function whenSetStartAndEnd() {
+        const form2 = document.forms['StartAndEndLangs'];
+        if (!validateLang(form2['Start language'].value, 'Start', true) || !validateLang(form2['End language'].value, 'End', false))
           return false;
-        }
 
-        var found = [false, false, false];
-
-        for (const iso in languages) {
-          for (const i in inputs)
-            if (inputs[i] === languages[iso])
-              found[i] = true;
-        }
-
-        for (const i in inputs)
-          if (!found[i]) {
-            alert(`${kinds[i]} language ${inputs[i]} is not valid.`);
-            //TODO clear input
-            return false;
-          }
-        
+        addInputs(document.getElementById('setStartAndEndForm'), ['Start language', 'End language']);
         return true;
       }
       function whenAddLanguage() {
-        const form = document.getElementById('languagesForm');
-        const form2 = document.forms['languagesForm'];
-        const inputs = kinds.map(kind => form[`${kind} language`].value);
-        for (const i in kinds) {
-          if (!validateLang(inputs[i], kinds[i], i == 0)) {
-            return false;
-          }
-        }
-        addInput(form, 'Input text', '');
+        const form = document.getElementById('addLanguageForm');
+        const added = document.forms['AddLang']['Added language'].value;
+
+        if (!validateLang(added, 'Added', false))
+          return false;
+        
+        middleLangs.push(added);
+        addInputs(document.getElementById('addLanguageForm'), ['foo']);
         return true;
       }
       function beforeTranslate() {
+        if ([startLang, endLang, document.forms["Input text to translate"]["Input text"].value].some(i => '' === i)) {
+          alert('All fields not filled out.');
+          return false;
+        }
+
         const form = document.getElementById('Text input form');
-        addInput(form, 'Start language', startLang);
-        addInput(form, 'End language', startLang);
-        addInput(form, 'Middle languages', JSON.stringify(middleLangs));
-        form.submit();
+        addInputs(form, ['Input text']);
+        return true;
       }
     </script>
     
-    <form action="" id="languagesForm" method="post" onsubmit="return whenAddLanguage()" name="StartAndEndAndAddLangs">
+    <form action="" id="setStartAndEndForm" method="post" onsubmit="return whenSetStartAndEnd()" name="StartAndEndLangs">
       <label for="Start language input">Choose a start language:</label>
       <input list="All-languages" id="Start language input" value="<%=startLang%>" name="Start language"/>
       
       <label for="End language input">Choose an end language:</label>
       <input list="All-but-auto" id="End language input" value="<%=endLang%>" name="End language"/>
 
-      <label for="Add-language-input">Choose another language to add:</label>
-      <input list="All-but-auto" id="Add-language-input" name="Added language"/>
-
-      <input type="hidden" name="Action kind" value="Start, end, and added languages"/>
+      <input type="hidden" name="Action kind" value="Start and end languages"/>
       <input type="submit" value="Ok">
     </form>
 
-    <form action="" id="Text input form" method="post" name="Input text to translate">
+    <form action="" id="addLanguageForm" method="post" onsubmit="return whenAddLanguage()" name="AddLang">
+      <label for="Add-language-input">Choose another language to add:</label>
+      <input list="All-but-auto" id="Add-language-input" name="Added language"/>
+
+      <input type="hidden" name="Action kind" value="Add language"/>
+      <input type="submit" value="Add">
+    </form>
+
+    <form action="" id="Text input form" method="post" onsubmit="return beforeTranslate()" name="Input text to translate">
       <label for="Input text">Input text to translate here:</label>
       <input type="text" id="Input text" name="Input text" value="<%= inputText %>" maxlength="1000" size="50%">
       <input type="hidden" name="Action kind" value="Input text"/>
       <input type="submit" value="Translate">
     </form>
 
-    <datalist id="All-languages">
-      <% for (const lang of eval(allLangs)) {%>
+    <datalist id="All-but-auto">
+      <% for (const lang of eval(allButAuto)) { %>
         <option value="<%-lang%>">
       <% } %>
     </datalist>
 
-    <datalist id="All-but-auto">
-      <% for (const lang of eval(allLangs)) { if (lang != "Automatic") {%>
+    <datalist id="All-languages">
+      <option value="Automatic">
+      <% for (const lang of eval(allButAuto)) {%>
         <option value="<%-lang%>">
-      <% } } %>
+      <% } %>
     </datalist>
     
     <h2>Here is your translated text:</h2>
